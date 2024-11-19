@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 require("dotenv").config(); 
+console.log("MONGO_URI:", process.env.MONGO_URI);
 
 mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("Connected to MongoDB"))
+  .connect("mongodb+srv://bumultiverse:vishuissexy@bu-multiverse.jxd9c.mongodb.net/hackMate", { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("haha, connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
 const userSchema = new mongoose.Schema(
@@ -63,12 +64,19 @@ const postSchema = new mongoose.Schema(
     },
     tags: { type: [String], default: [] },
     lookingFor: { type: String, default: "" },
+    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     comments: [
       {
-        commentId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         text: { type: String, required: true },
         createdAt: { type: Date, default: Date.now },
+        replies: [
+          {
+            authorId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+            text: { type: String, required: true },
+            createdAt: { type: Date, default: Date.now },
+          },
+        ], 
       },
     ],
   },

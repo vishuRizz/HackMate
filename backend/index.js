@@ -15,7 +15,7 @@ app.get("/", (req, res)=>{
     "message" : "deployment working perfectly, yaaayyyy"
   })
 })
- 
+
 app.use("/api/v1", rootRouter);
 
 app.listen(3000, () => {
