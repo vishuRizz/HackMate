@@ -1,9 +1,11 @@
 const mongoose = require("mongoose");
-require("dotenv").config(); 
-console.log("MONGO_URI:", process.env.MONGO_URI);
+require("dotenv").config();
 
 mongoose
-  .connect("mongodb+srv://bumultiverse:vishuissexy@bu-multiverse.jxd9c.mongodb.net/hackMate", { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(
+    "mongodb+srv://bumultiverse:vishuissexy@bu-multiverse.jxd9c.mongodb.net/hackMate",
+    { useNewUrlParser: true, useUnifiedTopology: true }
+  )
   .then(() => console.log("haha, connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
@@ -35,7 +37,7 @@ const userSchema = new mongoose.Schema(
         linkedin: { type: String, default: "" },
         portfolio: { type: String, default: "" },
       },
-      avatar: { type: String, default: "" }, 
+      avatar: { type: String, default: "" },
     },
     projects: [
       {
@@ -46,7 +48,11 @@ const userSchema = new mongoose.Schema(
       },
     ],
     posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
+    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    isAdmin: { type: Boolean, default: false }, 
   },
+
   { timestamps: true }
 );
 
@@ -76,14 +82,26 @@ const postSchema = new mongoose.Schema(
             text: { type: String, required: true },
             createdAt: { type: Date, default: Date.now },
           },
-        ], 
+        ],
       },
     ],
   },
   { timestamps: true }
 );
+const hackathonSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  date: { type: Date, required: true },
+  duration: { type: String }, 
+  location: { type: String },
+  organizer: { type: String, default: "" },
+  link: { type: String, default: "" }, 
+}, { timestamps: true });
+
+
 
 const User = mongoose.model("User", userSchema);
 const Post = mongoose.model("Post", postSchema);
+const Hackathon = mongoose.model("Hackathon", hackathonSchema);
 
-module.exports = { User, Post };
+module.exports = { User, Post, Hackathon };
