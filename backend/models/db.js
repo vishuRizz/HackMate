@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema(
     posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
     followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
     following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    isAdmin: { type: Boolean, default: false }, 
+    isAdmin: { type: Boolean, default: false },
   },
 
   { timestamps: true }
@@ -88,20 +88,68 @@ const postSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-const hackathonSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  date: { type: Date, required: true },
-  duration: { type: String }, 
-  location: { type: String },
-  organizer: { type: String, default: "" },
-  link: { type: String, default: "" }, 
-}, { timestamps: true });
 
+const hackathonSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    date: { type: Date, required: true },
+    duration: { type: String },
+    location: { type: String },
+    organizer: { type: String, default: "" },
+    link: { type: String, default: "" },
+  },
+  { timestamps: true }
+);
 
+const ChatMessageSchema = new mongoose.Schema({
+  senderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  receiverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  message: {
+    type: String,
+    required: true,
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now,
+  },
+  status: {
+    type: String,
+    enum: ["sent", "delivered", "seen"],
+    default: "sent",
+  },
+});
+
+const ConversationSchema = new mongoose.Schema({
+  participants: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+  ],
+  lastMessage: {
+    type: String,
+    default: "",
+  },
+  lastMessageTime: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
 const User = mongoose.model("User", userSchema);
 const Post = mongoose.model("Post", postSchema);
 const Hackathon = mongoose.model("Hackathon", hackathonSchema);
+const ChatMessage = mongoose.model("ChatMessage", ChatMessageSchema);
+const Conversation = mongoose.model("Conversation", ConversationSchema);
 
-module.exports = { User, Post, Hackathon };
+module.exports = { User, Post, Hackathon, ChatMessage, Conversation };
