@@ -3,8 +3,8 @@ const cors = require("cors");
 const http = require("http"); 
 const { Server } = require("socket.io"); 
 const rootRouter = require("./routes/index");
-const ChatMessage = require("./models/ChatMessage"); 
-const Conversation = require("./models/Conversation");
+const ChatMessage = require("./models/db"); 
+const Conversation = require("./models/db");
 
 const app = express();
 const server = http.createServer(app); 

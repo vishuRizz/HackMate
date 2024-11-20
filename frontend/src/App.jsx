@@ -1,12 +1,13 @@
+import { Route, Routes } from "react-router-dom";
 import "./App.css";
 
 function App() {
 
   return (
     <>
-      <div class="container py-4 px-3 mx-auto">
-        <div>this is the hackmate finder webApp</div>
-      </div>
+    <Routes>
+    <Route path="/" element={<h1>Home</h1>}></Route>
+    </Routes>
     </>
   );
 }
