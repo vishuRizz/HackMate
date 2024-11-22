@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import ProfileCard from "../components/ProfileCard";
 
+
 const Home = () => {
   const [darkMode, setDarkMode] = useState(false);
 
@@ -9,9 +10,9 @@ const Home = () => {
   const profileData = {
     name: "Vishu Pratap",
     email: "vishurizz0@gmail.com",
-    posts: [3, 3,3, 3,3 ,3],
-    followers: [4,43,43,43,2,2,1],
-    following: [3,4,4,3,3,2,2,2,2,2],
+    posts: [3, 3, 3, 3, 3, 3],
+    followers: [4, 43, 43, 43, 2, 2, 1],
+    following: [3, 4, 4, 3, 3, 2, 2, 2, 2, 2],
     isAdmin: true,
   };
 
@@ -19,7 +20,8 @@ const Home = () => {
     {
       id: "673cdb5ea541286181753b27",
       author: "Vishu Pratap",
-      content: "Need a backend developer for upcoming amazon hackathon, should be able to work in Node.js",
+      content:
+        "Need a backend developer for upcoming amazon hackathon, should be able to work in Node.js",
       tags: ["Backend Developer", "Hackathon"],
       likes: ["User1"],
       comments: ["Count me in!"],
@@ -32,14 +34,18 @@ const Home = () => {
   };
 
   return (
-    <div className={darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}>
+    <div
+      className={
+        darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"
+      }
+    >
       {/* Navbar */}
-      <Navbar/>
+      <Navbar />
       {/* Main Content */}
       <div className="container grid grid-cols-12 gap-6 p-4 mx-auto mt-20 max-h-44">
         {/* Left Sidebar (Profile) */}
         <aside className="col-span-3 bg-white rounded-lg shadow-md dark:bg-gray-800">
-         <ProfileCard/>
+          <ProfileCard />
         </aside>
 
         {/* Center Feed (Posts) */}
@@ -52,12 +58,18 @@ const Home = () => {
             />
           </div>
           {postData.map((post) => (
-            <div key={post.id} className="p-4 mb-4 rounded-md bg-gray-50 dark:bg-gray-700">
+            <div
+              key={post.id}
+              className="p-4 mb-4 rounded-md bg-gray-50 dark:bg-gray-700"
+            >
               <h3 className="text-lg font-semibold">{post.author}</h3>
               <p className="mt-2">{post.content}</p>
               <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
                 {post.tags.map((tag, index) => (
-                  <span key={index} className="px-2 py-1 mr-2 bg-blue-100 rounded dark:bg-blue-800">
+                  <span
+                    key={index}
+                    className="px-2 py-1 mr-2 bg-blue-100 rounded dark:bg-blue-800"
+                  >
                     #{tag}
                   </span>
                 ))}
@@ -78,7 +90,9 @@ const Home = () => {
               />
               <div>
                 <h3 className="text-sm font-semibold">John Doe</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Hey, let's connect!</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Hey, let's connect!
+                </p>
               </div>
             </li>
             <li className="flex items-center space-x-4">
@@ -89,7 +103,9 @@ const Home = () => {
               />
               <div>
                 <h3 className="text-sm font-semibold">Jane Smith</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Ready for the hackathon?</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Ready for the hackathon?
+                </p>
               </div>
             </li>
           </ul>
@@ -100,4 +116,3 @@ const Home = () => {
 };
 
 export default Home;
-
