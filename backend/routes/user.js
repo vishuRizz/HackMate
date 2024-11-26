@@ -28,7 +28,7 @@ router.post("/register", async (req, res) => {
     await newUser.save();
 
     const token = jwt.sign(
-      { id: user._id, email: user.email, isAdmin: user.isAdmin },
+      { id: newUser._id, email: newUser.email, isAdmin: newUser.isAdmin },
       "chudai",
       { expiresIn: "7d" }
     );

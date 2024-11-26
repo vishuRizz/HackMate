@@ -1,11 +1,22 @@
 import React, { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
+import Register from "./Auth/Register.jsx";
+import Login from "./Auth/Login.jsx";
 
 function NavbarHome() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [popupComponent, setPopupComponent] = useState(null);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const openPopup = (component) => {
+    setPopupComponent(component);
+  };
+
+  const closePopup = () => {
+    setPopupComponent(null);
   };
 
   return (
@@ -26,7 +37,6 @@ function NavbarHome() {
             HackMate
           </div>
 
-          {/* Desktop Links */}
           <div
             className="hidden ml-24 text-lg md:flex gap-x-6 text-slate-600"
             style={{
@@ -45,7 +55,6 @@ function NavbarHome() {
             </div>
           </div>
 
-          {/* Desktop Actions */}
           <div className="items-center hidden md:flex gap-x-6">
             <div
               className="text-lg text-blue-500 cursor-pointer"
@@ -57,17 +66,27 @@ function NavbarHome() {
               Organise a Hackathon
             </div>
             <button
+              onClick={() => openPopup(<Login />)}
               className="px-4 py-2 text-blue-600 transition duration-300 rounded-lg shadow-sm hover:text-white hover:bg-blue-600"
               style={{
                 fontFamily: "'Poppins', sans-serif",
                 fontWeight: 600,
               }}
             >
-              Sign In
+             Register
+            </button>
+            <button
+              onClick={() => openPopup(<Register />)}
+              className="px-4 py-2 text-blue-600 transition duration-300 rounded-lg shadow-sm hover:text-white hover:bg-blue-600"
+              style={{
+                fontFamily: "'Poppins', sans-serif",
+                fontWeight: 600,
+              }}
+            >
+              Login
             </button>
           </div>
 
-          {/* Mobile Menu Icon */}
           <div className="flex md:hidden">
             <button onClick={toggleMenu}>
               {isMenuOpen ? (
@@ -79,7 +98,6 @@ function NavbarHome() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div
             className="absolute top-[80px] left-0 w-full bg-white shadow-md md:hidden"
@@ -96,28 +114,44 @@ function NavbarHome() {
                 Developers
               </div>
               <div className="w-full h-px bg-gray-200"></div>
-              <div
-                className="text-lg text-blue-500 cursor-pointer"
-                style={{
-                  fontFamily: "'Poppins', sans-serif",
-                  fontWeight: 400,
-                }}
-              >
-                Organise a Hackathon
-              </div>
               <button
+                onClick={() => openPopup(<Login />)}
                 className="px-6 py-2 text-blue-600 transition duration-300 rounded-lg shadow-md hover:text-white hover:bg-blue-600"
                 style={{
                   fontFamily: "'Poppins', sans-serif",
                   fontWeight: 600,
                 }}
               >
-                Sign In
+                Register
+              </button>
+              <button
+                onClick={() => openPopup(<Register />)}
+                className="px-6 py-2 text-blue-600 transition duration-300 rounded-lg shadow-md hover:text-white hover:bg-blue-600"
+                style={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: 600,
+                }}
+              >
+                Login
               </button>
             </div>
           </div>
         )}
       </nav>
+
+      {popupComponent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="relative w-full h-auto max-w-[29.5rem] p-2 mx-2 overflow-hidden bg-white rounded-md shadow-lg">
+            <button
+              className="absolute text-gray-500 top-2 right-2 hover:text-gray-800 focus:outline-none"
+              onClick={closePopup}
+            >
+              ✖
+            </button>
+            <div className="overflow-y-auto max-h-[90vh]">{popupComponent}</div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
