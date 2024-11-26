@@ -68,6 +68,10 @@ const postSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    image: {
+      type: String,
+      default: "",
+      },
     tags: { type: [String], default: [] },
     lookingFor: { type: String, default: "" },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

@@ -5,29 +5,46 @@ const { User } = require("../models/db");
 const { Post } = require("../models/db");
 const { authenticateToken } = require("../middlewares/middleware");
 
-router.post("/", authenticateToken, async (req, res) => {
-  const { content, tags, lookingFor } = req.body;
-  const authorId = req.user.id;
+router.post(
+  "/",
+  authenticateToken,
+  upload.single("image"),
+  async (req, res) => {
+    const { content, tags, lookingFor } = req.body;
+    const authorId = req.user.id;
 
-  if (!content) {
-    return res.status(400).json({ message: "Post content is required." });
+    if (!content) {
+      return res.status(400).json({ message: "Post content is required." });
+    }
+
+    try {
+      const imageUrl = req.file ? req.file.path : null; // Check the image URL
+      console.log("Image URL:", imageUrl); // Log the image URL to verify
+
+      const newPost = new Post({
+        authorId,
+        content,
+        tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+        lookingFor,
+        image: imageUrl, // Image field will be null if no image
+      });
+
+      await newPost.save();
+      await User.findByIdAndUpdate(authorId, { $push: { posts: newPost._id } });
+
+      res.status(201).json({
+        message: "Post created successfully.",
+        post: newPost,
+      });
+    } catch (err) {
+      res.status(500).json({
+        message: "Error creating post.",
+        error: err.message,
+      });
+    }
   }
+);
 
-  try {
-    const newPost = new Post({ authorId, content, tags, lookingFor });
-    await newPost.save();
-
-    await User.findByIdAndUpdate(authorId, { $push: { posts: newPost._id } });
-
-    res
-      .status(201)
-      .json({ message: "Post created successfully.", post: newPost });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error creating post.", error: err.message });
-  }
-});
 
 router.get("/", async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
@@ -49,6 +66,7 @@ router.get("/", async (req, res) => {
       ...post.toObject(),
       likesCount: post.likes.length,
       comments: post.comments,
+      image: post.image,
     }));
 
     const totalPosts = await Post.countDocuments();
