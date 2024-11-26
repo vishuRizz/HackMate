@@ -4,19 +4,26 @@ import axios from "axios";
 import { useNavigate } from "react-router";
 const Register = () => {
   const navigate = useNavigate()
+  const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   
 
+
   const handleSignIn = async () => {
     try {
-      const response = await axios.post("http://127.0.0.1:5000/auth/login", {
-        username,
-        password,
+      const response = await axios.post("https://hackmate-backend.vercel.app/api/v1/user/register", {
+        name: name,
+        email: username,
+        password: password,
       });
-
+      
       console.log("Response:", response.data);
+      const token = `Bearer ${response.data.token}`;
+      localStorage.setItem("token", token);
+      navigate("/main")
     } catch (error) {
+      alert('something went wrong')
       console.error(
         "Login failed:",
         error.response ? error.response.data : error
@@ -28,7 +35,19 @@ const Register = () => {
     <StyledWrapper>
       <form className="form">
         <div className="flex-column">
-          <label>Username </label>
+          <label>Name </label>
+        </div>
+        <div className="inputForm">
+          <input
+            type="text"
+            className="input"
+            placeholder="Enter your Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className="flex-column">
+          <label>Email </label>
         </div>
         <div className="inputForm">
           <input
@@ -40,7 +59,7 @@ const Register = () => {
           />
         </div>
         <div className="flex-column">
-          <label>Password </label>
+          <label>Password</label>
         </div>
         <div className="inputForm">
           <input

@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import Register from "./Auth/Register.jsx";
 import Login from "./Auth/Login.jsx";
+import { useNavigate } from "react-router";
 
 function NavbarHome() {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [popupComponent, setPopupComponent] = useState(null);
 
@@ -25,7 +27,7 @@ function NavbarHome() {
         className="w-full h-20 p-[25px] bg-white shadow-md"
         style={{ fontFamily: "'Montserrat', sans-serif" }}
       >
-        <div className="flex items-center justify-between px-6 md:px-24">
+        <div className="flex items-center justify-between px-6 cursor-pointer md:px-24">
           <div
             className="text-3xl font-bold tracking-wide text-blue-500"
             style={{
@@ -50,7 +52,16 @@ function NavbarHome() {
             <div className="transition duration-300 cursor-pointer hover:text-blue-500">
               About
             </div>
-            <div className="transition duration-300 cursor-pointer hover:text-blue-500">
+            <div
+              onClick={() => {
+                if (localStorage.getItem("token")) {
+                  navigate("/main");
+                } else {
+                  openPopup(<Login />);
+                }
+              }}
+              className="transition duration-300 cursor-pointer hover:text-blue-500"
+            >
               Developers
             </div>
           </div>
@@ -66,17 +77,17 @@ function NavbarHome() {
               Organise a Hackathon
             </div>
             <button
-              onClick={() => openPopup(<Login />)}
+              onClick={() => openPopup(<Register />)}
               className="px-4 py-2 text-blue-600 transition duration-300 rounded-lg shadow-sm hover:text-white hover:bg-blue-600"
               style={{
                 fontFamily: "'Poppins', sans-serif",
                 fontWeight: 600,
               }}
             >
-             Register
+              Register
             </button>
             <button
-              onClick={() => openPopup(<Register />)}
+              onClick={() => openPopup(<Login />)}
               className="px-4 py-2 text-blue-600 transition duration-300 rounded-lg shadow-sm hover:text-white hover:bg-blue-600"
               style={{
                 fontFamily: "'Poppins', sans-serif",
@@ -110,12 +121,21 @@ function NavbarHome() {
               <div className="transition duration-300 cursor-pointer hover:text-blue-500">
                 About
               </div>
-              <div className="transition duration-300 cursor-pointer hover:text-blue-500">
+              <div
+                onClick={() => {
+                  if (localStorage.getItem("token")) {
+                    navigate("/main");
+                  } else {
+                    openPopup(<Login />);
+                  }
+                }}
+                className="transition duration-300 cursor-pointer hover:text-blue-500"
+              >
                 Developers
               </div>
               <div className="w-full h-px bg-gray-200"></div>
               <button
-                onClick={() => openPopup(<Login />)}
+                onClick={() => openPopup(<Register />)}
                 className="px-6 py-2 text-blue-600 transition duration-300 rounded-lg shadow-md hover:text-white hover:bg-blue-600"
                 style={{
                   fontFamily: "'Poppins', sans-serif",
@@ -125,7 +145,7 @@ function NavbarHome() {
                 Register
               </button>
               <button
-                onClick={() => openPopup(<Register />)}
+                onClick={() => openPopup(<Login />)}
                 className="px-6 py-2 text-blue-600 transition duration-300 rounded-lg shadow-md hover:text-white hover:bg-blue-600"
                 style={{
                   fontFamily: "'Poppins', sans-serif",

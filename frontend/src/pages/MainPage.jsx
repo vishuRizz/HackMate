@@ -1,9 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Navbar from "../components/Navbar";
 import ProfileCard from "../components/ProfileCard";
 import PostSection from "../components/PostSection";
 import MobileBottomNav from "../components/MobileBottomNav"; 
+import { useNavigate } from "react-router";
+
 const Home = () => {
+  const navigate = useNavigate();
+  useEffect(()=>{
+    if(!localStorage.getItem("token")){
+      alert("login first")
+      navigate("/")
+    }
+  })
   return (
     <div className="min-h-screen text-white bg-black">
       <Navbar />

@@ -39,7 +39,7 @@ router.get("/", async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
-      .populate("authorId", "name email profile.avatar")
+      .populate("authorId", "name email profile.avatar profile.college")
       .populate({
         path: "comments.authorId",
         select: "name email profile.avatar",

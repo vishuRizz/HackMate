@@ -3,28 +3,24 @@ import styled from "styled-components";
 import axios from "axios";
 import { useNavigate } from "react-router";
 const Login = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  
 
   const handleSignIn = async () => {
     try {
-      const response = await axios.post("http://127.0.0.1:5000/auth/login", {
-        username,
-        password,
-      });
+      const response = await axios.post(
+        "https://hackmate-backend.vercel.app/api/v1/user/login",
+        {
+          email: username,
+          password: password,
+        }
+      );
 
       console.log("Response:", response.data);
-      const token = `Bearer ${response.data.access_token}`;
-      const role = response.data.role;
-      localStorage.setItem("role", role);
+      const token = `Bearer ${response.data.token}`;
       localStorage.setItem("token", token);
-      if (role === "teacher") {
-        navigate("/teacher-dashboard")
-      } else if (role === "student") {
-        navigate("/all-quizes")
-      } 
+      navigate("/main");
     } catch (error) {
       console.error(
         "Login failed:",
@@ -37,7 +33,7 @@ const Login = () => {
     <StyledWrapper>
       <form className="form">
         <div className="flex-column">
-          <label>Username </label>
+          <label> Email </label>
         </div>
         <div className="inputForm">
           <input
@@ -49,7 +45,7 @@ const Login = () => {
           />
         </div>
         <div className="flex-column">
-          <label>Password </label>
+          <label> Password </label>
         </div>
         <div className="inputForm">
           <input
@@ -70,9 +66,12 @@ const Login = () => {
         <button type="button" className="button-submit" onClick={handleSignIn}>
           Sign In
         </button>
-        <p onClick={()=>{
-          navigate("/register")
-        }} className="p">
+        <p
+          onClick={() => {
+            navigate("/register");
+          }}
+          className="p"
+        >
           Don't have an account? <span className="span">Sign Up</span>
         </p>
         <p className="p line">Or With</p>
