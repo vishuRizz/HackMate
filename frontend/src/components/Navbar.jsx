@@ -1,35 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaLinkedin } from "react-icons/fa";
-import { FiHome, FiUser, FiBriefcase, FiMessageSquare, FiBell } from "react-icons/fi";
 import { GoHomeFill } from "react-icons/go";
 import { BsFillLaptopFill } from "react-icons/bs";
 import { BiSolidMessageRoundedEdit } from "react-icons/bi";
 import { FaUserFriends } from "react-icons/fa";
 import { RxAvatar } from "react-icons/rx";
+import { FiMenu, FiX } from "react-icons/fi"; // Import Hamburger and Close Icons
 import SearchBar from "./SearchBar";
 
 const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <nav className="fixed top-0 left-0 z-50 flex items-center h-[55px] justify-between w-full px-6 py-3 bg-[#292929] text-white backdrop-blur-md shadow-md">
-      {/* Left Section - Logo */}
-      <div className="flex items-center space-x-2">
+      {/* Left Section - Logo and Search */}
+      <div className="flex items-center flex-grow space-x-4">
         <FaLinkedin className="text-2xl text-gray-300" />
         <span className="text-xl font-bold text-gray-100">HackMate</span>
-      </div>
 
-      {/* Center Section - Search Bar */}
-      <div className="items-center hidden w-1/3 ml-40 md:flex">
-        <SearchBar/>
+        {/* Search Bar */}
+        <div className="flex-grow hidden ml-4 md:flex">
+          <SearchBar />
+        </div>
       </div>
 
       {/* Right Section - Links */}
-      <div className="flex space-x-6">
+      <div className="hidden space-x-6 md:flex">
         {[
           { icon: GoHomeFill, label: "Home" },
           { icon: FaUserFriends, label: "My Network" },
-          { icon: BsFillLaptopFill, label: "Hackathons", hasBadge: true, badgeCount: 24  },
+          { icon: BsFillLaptopFill, label: "Hackathons", hasBadge: true, badgeCount: 24 },
           { icon: BiSolidMessageRoundedEdit, label: "Messaging" },
-          { icon: RxAvatar, label: "Profile"},
+          { icon: RxAvatar, label: "Profile" },
         ].map((item, index) => (
           <div
             key={index}
@@ -45,6 +47,43 @@ const Navbar = () => {
           </div>
         ))}
       </div>
+
+      {/* Mobile Menu Button */}
+      <div className="md:hidden">
+        {isMenuOpen ? (
+          <FiX
+            className="text-2xl cursor-pointer"
+            onClick={() => setIsMenuOpen(false)}
+          />
+        ) : (
+          <FiMenu
+            className="text-2xl cursor-pointer"
+            onClick={() => setIsMenuOpen(true)}
+          />
+        )}
+      </div>
+
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="absolute top-[55px] right-0 bg-[#292929] w-full flex flex-col items-center space-y-4 py-4 shadow-md md:hidden">
+          {[
+            { icon: GoHomeFill, label: "Home" },
+            { icon: FaUserFriends, label: "My Network" },
+            { icon: BsFillLaptopFill, label: "Hackathons", hasBadge: true, badgeCount: 24 },
+            { icon: BiSolidMessageRoundedEdit, label: "Messaging" },
+            { icon: RxAvatar, label: "Profile" },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className="relative flex items-center space-x-2 text-gray-300 transition duration-200 cursor-pointer hover:text-yellow-400"
+              onClick={() => setIsMenuOpen(false)} // Close menu when clicking a link
+            >
+              <item.icon size={22} />
+              <span className="text-sm">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </nav>
   );
 };
