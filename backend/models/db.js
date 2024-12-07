@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
+const mongoUri = process.env.MONGO_URI;
 
 mongoose
   .connect(
-    "mongodb+srv://bumultiverse:vishuissexy@bu-multiverse.jxd9c.mongodb.net/hackMate",
+    mongoUri,
     { useNewUrlParser: true, useUnifiedTopology: true }
   )
   .then(() => console.log("haha, connected to MongoDB"))

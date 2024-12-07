@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { User: HackMateUser } = require("../models/db"); // HackMate User Model
-const { upload } = require("../cloudinary");
+const { upload } = require("../couldinary");
 const { authenticateToken } = require("../middlewares/middleware");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");

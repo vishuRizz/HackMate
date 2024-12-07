@@ -5,6 +5,7 @@ const { Server } = require("socket.io");
 const rootRouter = require("./routes/index");
 const ChatMessage = require("./models/db"); 
 const Conversation = require("./models/db");
+require("dotenv").config();
 
 const app = express();
 const server = http.createServer(app); 
