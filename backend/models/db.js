@@ -9,52 +9,46 @@ mongoose
   .then(() => console.log("haha, connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-const userSchema = new mongoose.Schema(
-  {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    profile: {
-      bio: { type: String, default: "" },
-      skills: { type: [String], default: [] },
-      college: { type: String, default: "" },
-      socialLinks: {
-        github: { type: String, default: "" },
-        instagram: { type: String, default: "" },
-        linkedin: { type: String, default: "" },
-        portfolio: { type: String, default: "" },
+  const userSchema = new mongoose.Schema(
+    {
+      firebaseUid: {
+        type: String,
+        required: true,
+        unique: true,
       },
-      avatar: { type: String, default: "" },
-    },
-    projects: [
-      {
-        title: { type: String, required: true },
-        description: { type: String, required: true },
-        image: { type: String, default: "" },
-        techStack: { type: [String], default: [] },
+      name: {
+        type: String,
+        required: true,
+        trim: true,
       },
-    ],
-    posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
-    followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    isAdmin: { type: Boolean, default: false },
-  },
-
-  { timestamps: true }
-);
+      profile: {
+        bio: { type: String, default: "" },
+        skills: { type: [String], default: [] },
+        college: { type: String, default: "" },
+        socialLinks: {
+          github: { type: String, default: "" },
+          instagram: { type: String, default: "" },
+          linkedin: { type: String, default: "" },
+          portfolio: { type: String, default: "" },
+        },
+        avatar: { type: String, default: "" },
+      },
+      projects: [
+        {
+          title: { type: String, required: true },
+          description: { type: String, required: true },
+          image: { type: String, default: "" },
+          techStack: { type: [String], default: [] },
+        },
+      ],
+      posts: [{ type: mongoose.Schema.Types.ObjectId, ref: "Post" }],
+      followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      following: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+      isAdmin: { type: Boolean, default: false },
+    },
+    { timestamps: true }
+  );
+  
 
 const postSchema = new mongoose.Schema(
   {

@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 import Register from "./Auth/Register.jsx";
 import Login from "./Auth/Login.jsx";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
-function NavbarHome() {
-  const navigate = useNavigate();
+
+const NavbarHome = () => {
+const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [popupComponent, setPopupComponent] = useState(null);
 

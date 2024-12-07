@@ -7,7 +7,7 @@ import { FaUserFriends } from "react-icons/fa";
 import { RxAvatar } from "react-icons/rx";
 import { FiMenu, FiX } from "react-icons/fi"; 
 import SearchBar from "./SearchBar";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const navigate = useNavigate();

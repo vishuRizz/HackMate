@@ -2,72 +2,84 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { User } = require("../models/db");
-const { upload } = require("../couldinary");
+const { User: HackMateUser } = require("../models/db"); // HackMate User Model
+const { upload } = require("../cloudinary");
 const { authenticateToken } = require("../middlewares/middleware");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getAuth } = require("firebase-admin/auth");
+const axios = require("axios");
 
 const router = express.Router();
 
-router.post("/register", async (req, res) => {
-  const { name, email, password } = req.body;
+// Firebase Admin SDK setup
+const firebaseAdminConfig = {
+  type: "service_account",
+  project_id: process.env.FIREBASE_PROJECT_ID,
+  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+  client_email: process.env.FIREBASE_CLIENT_EMAIL,
+};
+initializeApp({ credential: cert(firebaseAdminConfig) });
 
-  if (!name || !email || !password) {
-    return res
-      .status(400)
-      .json({ message: "Name, email, and password are required." });
+
+// Login or Register based on Firebase Token
+router.post("/auth", async (req, res) => {
+  const { token } = req.body;
+
+  if (!token) {
+    return res.status(400).json({ message: "Firebase token is required." });
   }
 
   try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "Email already in use." });
+    // Step 1: Verify Firebase token and extract UID
+    const decodedToken = await getAuth().verifyIdToken(token);
+    const { uid: firebaseUid, name, email } = decodedToken;
+
+    // Step 2: Synchronize with Main User Database
+    const mainUserResponse = await axios.post(`${process.env.MAIN_USER_API_URL}/api/user/sync`, {
+      firebaseUid,
+      email,
+      name,
+    });
+    const mainUserData = mainUserResponse.data.user;
+
+    // Step 3: Check or create HackMate user entry
+    let hackMateUser = await HackMateUser.findOne({ firebaseUid });
+
+    if (!hackMateUser) {
+      hackMateUser = new HackMateUser({
+        firebaseUid,
+        profile: {
+          bio: "",
+          skills: [],
+          college: "",
+          socialLinks: {
+            github: "",
+            instagram: "",
+            linkedin: "",
+            portfolio: "",
+          },
+          avatar: "",
+        },
+        projects: [],
+        posts: [],
+        followers: [],
+        following: [],
+      });
+      await hackMateUser.save();
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, password: hashedPassword });
-    await newUser.save();
-
-    const token = jwt.sign(
-      { id: newUser._id, email: newUser.email, isAdmin: newUser.isAdmin },
-      "chudai",
-      { expiresIn: "7d" }
-    );
-
-    res.status(201).json({ message: "User registered successfully.", token } );
-  } catch (err) {
-    res.status(500).json({ message: "Error registering user.", error: err.message });
+    // Step 4: Respond with combined user data
+    res.status(200).json({
+      message: "Authentication successful.",
+      mainUser: mainUserData,
+      hackMateUser,
+    });
+  } catch (error) {
+    console.error("Error during login process:", error.message);
+    res.status(500).json({ message: "Error authenticating user.", error: error.message });
   }
 });
 
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required." });
-  }
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials." });
-    }
-
-    const token = jwt.sign(
-      { id: user._id, email: user.email, isAdmin: user.isAdmin },
-      "chudai",
-      { expiresIn: "7d" }
-    );
-
-    res.status(200).json({ message: "Login successful.", token });
-  } catch (err) {
-    res.status(500).json({ message: "Error logging in.", error: err.message });
-  }
-});
 
 router.get("/profile/:id", async (req, res) => {
   const { id } = req.params;

@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 import ProfileCard from "../components/ProfileCard";
 import PostSection from "../components/PostSection";
 import MobileBottomNav from "../components/MobileBottomNav";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import PostPopup from "../components/PostAddPop";
 
 const MainPage = () => {

@@ -13,11 +13,11 @@ function Hero() {
     const typingAnimation = gsap.timeline({ repeat: -1 });
     typingAnimation
       .to(textAnimationRef.current, {
-        text: "HackMate",
+        text: "Bu-Multiverse",
         duration: 2,
         ease: "power1.inOut",
       })
-      .to(textAnimationRef.current, { text: "", duration: 2 });
+      .to(textAnimationRef.current, { text: "Hack-Mate", duration: 3 });
 
     gsap.to(careerTextRef.current, {
       color: ["#22c55e", "#3b82f6", "#9333ea", "#eab308"],
@@ -36,13 +36,13 @@ function Hero() {
       <div className="relative text-center" style={{ paddingTop: "80px" }}>
         <div style={{ transform: "translateY(-100px)" }}>
           <h1 className="text-5xl font-bold tracking-wide text-gray-800">
-            <span className="font-light">Redefining</span>{" "}
+            <span className="font-light">Resolving</span>{" "}
             <span ref={careerTextRef} className="text-6xl font-bold highlight">
-              CAREER
+              Campus
             </span>
           </h1>
           <h1 className="text-5xl font-bold tracking-wide text-gray-800">
-            opportunities <span className="font-light">for</span> developers{" "}
+            PROBLEMS <span className="font-light">for</span> developers{" "}
             <span className="font-light">with</span>
           </h1>
           <div
