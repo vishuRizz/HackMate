@@ -85,7 +85,7 @@ router.get("/profile/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const user = await User.findById(id)
+    const user = await HackMateUser.findById(id)
       .select("-password")
       .populate("followers", "name email profile.avatar")
       .populate("following", "name email profile.avatar");
@@ -144,7 +144,7 @@ router.put("/profile", authenticateToken, async (req, res) => {
   const { bio, skills, college, socialLinks } = req.body;
 
   try {
-    const updatedProfile = await User.findByIdAndUpdate(
+    const updatedProfile = await HackMateUser.findByIdAndUpdate(
       userId,
       {
         "profile.bio": bio,
@@ -163,7 +163,7 @@ router.put("/profile", authenticateToken, async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await HackMateUser.find().select("-password");
     res.status(200).json({ users });
   } catch (err) {
     res.status(500).json({ message: "Error fetching users.", error: err.message });
@@ -184,7 +184,7 @@ router.post(
     try {
       const avatarUrl = req.file.path;
 
-      await User.findByIdAndUpdate(userId, { "profile.avatar": avatarUrl });
+      await HackMateUser.findByIdAndUpdate(userId, { "profile.avatar": avatarUrl });
 
       res.status(200).json({ message: "Avatar uploaded successfully.", avatarUrl });
     } catch (err) {
