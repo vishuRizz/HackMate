@@ -30,9 +30,10 @@ router.post("/auth", async (req, res) => {
   }
 
   try {
-    // Step 1: Verify Firebase token and extract UID
+    // Step 1: Verify Firebase token
     const decodedToken = await getAuth().verifyIdToken(token);
     const { uid: firebaseUid, name, email } = decodedToken;
+    console.log("Decoded Token:", { firebaseUid, name, email });
 
     // Step 2: Synchronize with Main User Database
     const mainUserResponse = await axios.post(`${process.env.MAIN_USER_API_URL}/api/user/sync`, {
@@ -41,34 +42,24 @@ router.post("/auth", async (req, res) => {
       name,
     });
     const mainUserData = mainUserResponse.data.user;
+    console.log("Synchronized Main User:", mainUserData);
 
     // Step 3: Check or create HackMate user entry
     let hackMateUser = await HackMateUser.findOne({ firebaseUid });
-
     if (!hackMateUser) {
+      console.log("HackMate user not found. Creating new entry...");
       hackMateUser = new HackMateUser({
         firebaseUid,
-        profile: {
-          bio: "",
-          skills: [],
-          college: "",
-          socialLinks: {
-            github: "",
-            instagram: "",
-            linkedin: "",
-            portfolio: "",
-          },
-          avatar: "",
-        },
+        profile: { bio: "", skills: [], socialLinks: {}, avatar: "" },
         projects: [],
         posts: [],
-        followers: [],
-        following: [],
       });
       await hackMateUser.save();
+    } else {
+      console.log("HackMate user found:", hackMateUser);
     }
 
-    // Step 4: Respond with combined user data
+    // Step 4: Respond
     res.status(200).json({
       message: "Authentication successful.",
       mainUser: mainUserData,
