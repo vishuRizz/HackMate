@@ -5,45 +5,54 @@ const { User } = require("../models/db");
 const { Post } = require("../models/db");
 const { authenticateToken } = require("../middlewares/middleware");
 
-router.post(
-  "/",
-  authenticateToken,
-  upload.single("image"),
-  async (req, res) => {
-    const { content, tags, lookingFor } = req.body;
-    const authorId = req.user.id;
+router.post("/", authenticateToken, upload.single("image"), async (req, res) => {
+  const { content, tags, lookingFor } = req.body;
+  const firebaseUid = req.user.id; 
 
-    if (!content) {
-      return res.status(400).json({ message: "Post content is required." });
-    }
-
-    try {
-      const imageUrl = req.file ? req.file.path : null; // Check the image URL
-      console.log("Image URL:", imageUrl); // Log the image URL to verify
-
-      const newPost = new Post({
-        authorId,
-        content,
-        tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
-        lookingFor,
-        image: imageUrl, // Image field will be null if no image
-      });
-
-      await newPost.save();
-      await User.findByIdAndUpdate(authorId, { $push: { posts: newPost._id } });
-
-      res.status(201).json({
-        message: "Post created successfully.",
-        post: newPost,
-      });
-    } catch (err) {
-      res.status(500).json({
-        message: "Error creating post.",
-        error: err.message,
-      });
-    }
+  if (!content) {
+    return res.status(400).json({ message: "Post content is required." });
   }
-);
+
+  try {
+    // Step 1: Find the User ObjectId using the Firebase UID
+    const user = await User.findOne({ firebaseUid });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const authorId = user._id; // MongoDB ObjectId of the user
+
+    // Step 2: Create the Post
+    const imageUrl = req.file ? req.file.path : null;
+
+    const newPost = new Post({
+      authorId, // Use ObjectId from the User collection
+      content,
+      tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+      lookingFor,
+      image: imageUrl,
+    });
+
+    // Save the new Post
+    await newPost.save();
+
+    // Step 3: Update the User's posts array
+    await User.findByIdAndUpdate(authorId, { $push: { posts: newPost._id } });
+
+    res.status(201).json({
+      message: "Post created successfully.",
+      post: newPost,
+    });
+  } catch (err) {
+    console.error("Error creating post:", err.message);
+    res.status(500).json({
+      message: "Error creating post.",
+      error: err.message,
+    });
+  }
+});
+
 
 
 router.get("/", async (req, res) => {
