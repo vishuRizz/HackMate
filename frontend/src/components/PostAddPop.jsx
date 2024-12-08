@@ -34,7 +34,7 @@ const PostPopup = ({ onClose }) => {
       }
   
       const response = await axios.post(
-        "https://hackmate-backend.vercel.app/api/v1/post",
+        "https://hackmatebackend.vercel.app/api/v1/post",
         formData,
         {
           headers: {
@@ -43,8 +43,7 @@ const PostPopup = ({ onClose }) => {
           },
         }
       );
-  
-      console.log("Response:", response);  
+    
   
       onClose(); 
     } catch (err) {

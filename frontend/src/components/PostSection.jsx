@@ -11,9 +11,8 @@ const PostSection = () => {
     const fetchPosts = async () => {
       try {
         const res = await axios.get(
-          "https://hackmate-backend.vercel.app/api/v1/post"
+          "https://hackmatebackend.vercel.app/api/v1/post"
         );
-        console.log(res.data);
         setPosts(res.data.posts);
         setLoading(false);
       } catch (error) {
