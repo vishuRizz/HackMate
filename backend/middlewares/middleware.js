@@ -1,19 +1,22 @@
-const { getAuth } = require("firebase-admin/auth"); 
+const { getAuth } = require("firebase-admin/auth");
 
 async function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; 
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({ message: "Token not provided." });
   }
 
   try {
-    // Verify Firebase token using Firebase Admin SDK
     const decodedToken = await getAuth().verifyIdToken(token);
 
-    // Attach the decoded token (user details) to the request object
-    req.user = decodedToken;
+    console.log("Decoded Token:", decodedToken); 
+    req.user = {
+      id: decodedToken.uid, 
+      email: decodedToken.email,
+      name: decodedToken.name,
+    };
     next();
   } catch (error) {
     console.error("Firebase token verification failed:", error.message);

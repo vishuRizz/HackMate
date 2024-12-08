@@ -34,8 +34,8 @@ const Login = () => {
         }
       );
   
-  
-      localStorage.setItem("token", `Bearer ${response.data.token}`); 
+      
+      localStorage.setItem("token", `Bearer ${token}`); 
       localStorage.setItem("user", JSON.stringify(response.data.mainUser));
   
       navigate("/main");
