@@ -30,46 +30,91 @@ router.post("/auth", async (req, res) => {
   }
 
   try {
-    // Step 1: Verify Firebase token
+    // Step 1: Verify Firebase token and extract UID
     const decodedToken = await getAuth().verifyIdToken(token);
-    const { uid: firebaseUid, name, email } = decodedToken;
-    console.log("Decoded Token:", { firebaseUid, name, email });
+    const { uid: firebaseUid, email, name } = decodedToken;
+
+    if (!email || !name) {
+      console.log("Decoded token missing email or name:", decodedToken);
+      return res.status(400).json({ message: "Email and name are required in Firebase token." });
+    }
+    console.log("Decoded token:", decodedToken);
+    console.log("Payload being sent to main data backend:", { firebaseUid, email, name });
 
     // Step 2: Synchronize with Main User Database
-    const mainUserResponse = await axios.post(`${process.env.MAIN_USER_API_URL}/api/user/sync`, {
-      firebaseUid,
-      email,
-      name,
-    });
-    const mainUserData = mainUserResponse.data.user;
-    console.log("Synchronized Main User:", mainUserData);
+    try {
+      const mainUserResponse = await axios.post(
+        `${process.env.MAIN_USER_API_URL}/api/user/sync`,
+        { firebaseUid, email, name }
+      );
 
-    // Step 3: Check or create HackMate user entry
-    let hackMateUser = await HackMateUser.findOne({ firebaseUid });
-    if (!hackMateUser) {
-      console.log("HackMate user not found. Creating new entry...");
-      hackMateUser = new HackMateUser({
-        firebaseUid,
-        profile: { bio: "", skills: [], socialLinks: {}, avatar: "" },
-        projects: [],
-        posts: [],
+      console.log("Response from main data backend:", mainUserResponse.data);
+
+      if (mainUserResponse.status !== 200) {
+        return res.status(500).json({
+          message: "Failed to synchronize user with main data backend.",
+          error: mainUserResponse.data.error || 'Unknown error',
+        });
+      }
+
+      const mainUserData = mainUserResponse.data.user;
+
+      // Step 3: Check or create HackMate user entry
+      let hackMateUser = await HackMateUser.findOne({ firebaseUid });
+
+      if (!hackMateUser) {
+        console.log("Creating new HackMate user...");
+        
+        // Create HackMate user with the name field included
+        hackMateUser = new HackMateUser({
+          firebaseUid,
+          name,  // Ensure name is passed to the HackMate user schema
+          email,
+          profile: { bio: "", skills: [] },
+          projects: [],
+          posts: [],
+          followers: [],
+          following: [],
+        });
+
+        // Add logging before save
+        console.log("HackMate user object before saving:", hackMateUser);
+
+        try {
+          await hackMateUser.save();
+          console.log("HackMate user saved successfully.");
+        } catch (error) {
+          console.error("Error saving HackMate user:", error.message);
+          return res.status(500).json({
+            message: "Failed to create HackMate user.",
+            error: error.message,
+          });
+        }
+      } else {
+        console.log("HackMate user already exists:", hackMateUser);
+      }
+
+      // Step 4: Respond with combined user data
+      res.status(200).json({
+        message: "Authentication successful.",
+        mainUser: mainUserData,
+        hackMateUser,
       });
-      await hackMateUser.save();
-    } else {
-      console.log("HackMate user found:", hackMateUser);
+
+    } catch (error) {
+      console.error("Error syncing with main data backend:", error.response?.data || error.message);
+      return res.status(500).json({
+        message: "Failed to synchronize user with main data backend.",
+        error: error.response?.data || error.message,
+      });
     }
 
-    // Step 4: Respond
-    res.status(200).json({
-      message: "Authentication successful.",
-      mainUser: mainUserData,
-      hackMateUser,
-    });
   } catch (error) {
-    console.error("Error during login process:", error.message);
+    console.error("Error during authentication:", error.message);
     res.status(500).json({ message: "Error authenticating user.", error: error.message });
   }
 });
+
 
 
 router.get("/profile/:id", async (req, res) => {

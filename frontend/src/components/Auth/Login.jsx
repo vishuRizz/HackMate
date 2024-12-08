@@ -13,28 +13,34 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     const auth = getAuth();
     const provider = new GoogleAuthProvider();
-
+  
     try {
       // Step 1: Sign in with Google
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken(); // Firebase token
-
+      
+  
       console.log("Firebase Token:", token);
-
+  
       // Step 2: Send token to HackMate backend
       const response = await axios.post(
-        "https://hackmatebackend.vercel.app/api/v1/user/auth",
+        "http://localhost:3000/api/v1/user/auth",
         {
           token,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json", // Make sure content type is set
+          },
         }
       );
-      console.log(token)
+  
       console.log("Response from backend:", response.data);
-
+  
       // Step 3: Store token or relevant user data in localStorage
-      localStorage.setItem("token", `Bearer ${response.data.token}`);
+      localStorage.setItem("token", `Bearer ${response.data.token}`); // Store JWT token if returned
       localStorage.setItem("user", JSON.stringify(response.data.mainUser));
-
+  
       // Step 4: Navigate to the main page
       navigate("/main");
     } catch (error) {
@@ -42,6 +48,7 @@ const Login = () => {
       alert("Google Sign-In failed. Please try again.");
     }
   };
+  
 
   return (
     <StyledWrapper>

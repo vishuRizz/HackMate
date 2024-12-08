@@ -22,6 +22,11 @@ mongoose
         required: true,
         trim: true,
       },
+      email: { 
+        type: String,
+        required: true, 
+        unique: true,   
+      },
       profile: {
         bio: { type: String, default: "" },
         skills: { type: [String], default: [] },
