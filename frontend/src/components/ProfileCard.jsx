@@ -1,7 +1,37 @@
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 
 const ProfileCard = () => {
+  const [profileData, setProfileData] = useState([]);
+console.log(profileData)
+    useEffect(() => {
+      const getFullProfile = async () => {
+        try {
+          const hackmateMongoId = localStorage.getItem("hackmateMongoId");
+  
+          if (!hackmateMongoId) {
+            console.error("No HackMate ID found in local storage.");
+            return;
+          }
+  
+          const res = await axios.post(
+            `http://localhost:3000/api/v1/user/me`,
+            { id: hackmateMongoId }
+          );
+          
+          // console.log("Data for profile:", res.data);
+          setProfileData(res.data.user)
+        } catch (error) {
+          console.error("Error fetching profile:", error.response?.data || error.message);
+        }
+      };
+  
+      getFullProfile();
+    }, [])
+  
+  
   return (
+    <>
     <div className="max-w-xs mx-auto bg-gray-900 rounded-lg shadow-lg">
       {/* Background Section */}
       <div className="relative">
@@ -22,13 +52,14 @@ const ProfileCard = () => {
 
       {/* Profile Details */}
       <div className="p-4 text-center">
-        <h1 className="text-lg font-semibold text-white">Vishu Pratap</h1>
+        <h1 className="text-lg font-semibold text-white">{profileData.name}</h1>
         <p className="mt-1 text-sm text-gray-400">
-          FULL Stack Developer | MORE OF MY BIO
+          {/* {profileData.profile.bio || "Add your profile description"} */}
         </p>
-        <p className="mt-1 text-sm text-gray-500">Noida, Uttar Pradesh</p>
+        {/* <p className="mt-1 text-sm text-gray-500">{profileData.profile.college || "College"}</p> */}
       </div>
     </div>
+    </>
   );
 };
 

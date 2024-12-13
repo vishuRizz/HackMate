@@ -2,6 +2,8 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Home from "./pages/Home";
 import MainPage from "./pages/MainPage";
+import ProfilePage from "./pages/ProfilePage";
+import ProfileUser from "./pages/ProfileUser";
 
 function App() {
   const location = useLocation();
@@ -22,6 +24,8 @@ function App() {
       <Routes>
         <Route path="/main" element={<MainPage />} />
         <Route path="/" element={<Home />} />
+        <Route path="main/user/profile" element={<ProfilePage/>} />
+        <Route path="main/user/profile/:id" element={<ProfileUser/>} />
       </Routes>
     </>
   );

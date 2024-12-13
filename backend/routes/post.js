@@ -21,7 +21,7 @@ router.post("/", authenticateToken, upload.single("image"), async (req, res) => 
       return res.status(404).json({ message: "User not found." });
     }
 
-    const authorId = user._id; // MongoDB ObjectId of the user
+    const authorId = user._id;
 
     // Step 2: Create the Post
     const imageUrl = req.file ? req.file.path : null;
@@ -56,7 +56,7 @@ router.post("/", authenticateToken, upload.single("image"), async (req, res) => 
 
 
 router.get("/", async (req, res) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 30 } = req.query;
 
   try {
     const skip = (page - 1) * limit;

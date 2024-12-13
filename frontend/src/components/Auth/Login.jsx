@@ -21,9 +21,10 @@ const Login = () => {
       
   
       console.log("Firebase Token:", token);
-  
+  // https://hackmatebackend.vercel.app/
+  // http://localhost:3000/
       const response = await axios.post(
-        "https://hackmatebackend.vercel.app/api/v1/user/auth",
+        "http://localhost:3000/api/v1/user/auth",
         {
           token,
         },
@@ -34,7 +35,7 @@ const Login = () => {
         }
       );
   
-      
+      localStorage.setItem("hackmateMongoId", response.data.hackMateUser._id);
       localStorage.setItem("token", `Bearer ${token}`); 
       localStorage.setItem("user", JSON.stringify(response.data.mainUser));
   
@@ -44,7 +45,7 @@ const Login = () => {
       alert("Google Sign-In failed. Please try again.");
     }
   };
-  
+
 
   return (
     <StyledWrapper>

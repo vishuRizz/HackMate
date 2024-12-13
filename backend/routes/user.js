@@ -2,16 +2,16 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const { User: HackMateUser } = require("../models/db"); // HackMate User Model
+const { User: HackMateUser } = require("../models/db");
 const { upload } = require("../couldinary");
 const { authenticateToken } = require("../middlewares/middleware");
 const { initializeApp, cert } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");
 const axios = require("axios");
+const { authenticateFirebaseToken } = require("../middlewares/authenticateFirebaseToken");
 
 const router = express.Router();
 
-// Firebase Admin SDK setup
 const firebaseAdminConfig = {
   type: "service_account",
   project_id: process.env.FIREBASE_PROJECT_ID,
@@ -21,7 +21,6 @@ const firebaseAdminConfig = {
 initializeApp({ credential: cert(firebaseAdminConfig) });
 
 
-// Login or Register based on Firebase Token
 router.post("/auth", async (req, res) => {
   const { token } = req.body;
 
@@ -38,8 +37,7 @@ router.post("/auth", async (req, res) => {
       console.log("Decoded token missing email or name:", decodedToken);
       return res.status(400).json({ message: "Email and name are required in Firebase token." });
     }
-    console.log("Decoded token:", decodedToken);
-    console.log("Payload being sent to main data backend:", { firebaseUid, email, name });
+    // console.log("Decoded token:", decodedToken);
 
     // Step 2: Synchronize with Main User Database
     try {
@@ -48,27 +46,21 @@ router.post("/auth", async (req, res) => {
         { firebaseUid, email, name }
       );
 
-      console.log("Response from main data backend:", mainUserResponse.data);
-
       if (mainUserResponse.status !== 200) {
         return res.status(500).json({
           message: "Failed to synchronize user with main data backend.",
-          error: mainUserResponse.data.error || 'Unknown error',
+          error: mainUserResponse.data.error || "Unknown error",
         });
       }
 
       const mainUserData = mainUserResponse.data.user;
 
-      // Step 3: Check or create HackMate user entry
       let hackMateUser = await HackMateUser.findOne({ firebaseUid });
 
       if (!hackMateUser) {
-        console.log("Creating new HackMate user...");
-        
-        // Create HackMate user with the name field included
         hackMateUser = new HackMateUser({
           firebaseUid,
-          name,  // Ensure name is passed to the HackMate user schema
+          name,
           email,
           profile: { bio: "", skills: [] },
           projects: [],
@@ -77,24 +69,9 @@ router.post("/auth", async (req, res) => {
           following: [],
         });
 
-        // Add logging before save
-        console.log("HackMate user object before saving:", hackMateUser);
-
-        try {
-          await hackMateUser.save();
-          console.log("HackMate user saved successfully.");
-        } catch (error) {
-          console.error("Error saving HackMate user:", error.message);
-          return res.status(500).json({
-            message: "Failed to create HackMate user.",
-            error: error.message,
-          });
-        }
-      } else {
-        console.log("HackMate user already exists:", hackMateUser);
+        await hackMateUser.save();
       }
 
-      // Step 4: Respond with combined user data
       res.status(200).json({
         message: "Authentication successful.",
         mainUser: mainUserData,
@@ -108,10 +85,35 @@ router.post("/auth", async (req, res) => {
         error: error.response?.data || error.message,
       });
     }
-
   } catch (error) {
     console.error("Error during authentication:", error.message);
     res.status(500).json({ message: "Error authenticating user.", error: error.message });
+  }
+});
+
+
+router.post("/me", async (req, res) => {
+  try {
+    const { id: userId } = req.body; // Extract the ID from the request body
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required in the request body." });
+    }
+
+    // Fetch the user details
+    const user = await HackMateUser.findById(userId)
+      .select("-password") // Exclude the password field
+      .populate("followers", "name email profile.avatar") // Populate followers
+      .populate("following", "name email profile.avatar"); // Populate following
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.status(200).json({ user });
+  } catch (error) {
+    console.error("Error fetching current user's details:", error.message);
+    res.status(500).json({ message: "Error fetching user details.", error: error.message });
   }
 });
 
@@ -175,13 +177,13 @@ router.post("/follow/:userId", authenticateToken, async (req, res) => {
   }
 });
 
-router.put("/profile", authenticateToken, async (req, res) => {
+router.put("/profile", authenticateFirebaseToken, async (req, res) => {
   const userId = req.user.id;
   const { bio, skills, college, socialLinks } = req.body;
 
   try {
-    const updatedProfile = await HackMateUser.findByIdAndUpdate(
-      userId,
+    const updatedProfile = await HackMateUser.findOneAndUpdate(
+      { firebaseUid: userId },
       {
         "profile.bio": bio,
         "profile.skills": skills,
@@ -191,24 +193,21 @@ router.put("/profile", authenticateToken, async (req, res) => {
       { new: true }
     ).select("-password");
 
+    if (!updatedProfile) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
     res.status(200).json({ message: "Profile updated successfully.", updatedProfile });
   } catch (err) {
+    console.error("Error updating profile:", err.message);
     res.status(500).json({ message: "Error updating profile.", error: err.message });
   }
 });
 
-router.get("/", async (req, res) => {
-  try {
-    const users = await HackMateUser.find().select("-password");
-    res.status(200).json({ users });
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching users.", error: err.message });
-  }
-});
-
+// Upload Avatar Route
 router.post(
   "/upload-avatar",
-  authenticateToken,
+  authenticateFirebaseToken,
   upload.single("avatar"),
   async (req, res) => {
     const userId = req.user.id;
@@ -220,13 +219,79 @@ router.post(
     try {
       const avatarUrl = req.file.path;
 
-      await HackMateUser.findByIdAndUpdate(userId, { "profile.avatar": avatarUrl });
+      const user = await HackMateUser.findOneAndUpdate(
+        { firebaseUid: userId },
+        { "profile.avatar": avatarUrl },
+        { new: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
 
       res.status(200).json({ message: "Avatar uploaded successfully.", avatarUrl });
     } catch (err) {
+      console.error("Error uploading avatar:", err.message);
       res.status(500).json({ message: "Error uploading avatar.", error: err.message });
     }
   }
 );
+
+// router.put("/profile", authenticateToken, async (req, res) => {
+//   const userId = req.user.id;
+//   const { bio, skills, college, socialLinks } = req.body;
+
+//   try {
+//     const updatedProfile = await HackMateUser.findByIdAndUpdate(
+//       userId,
+//       {
+//         "profile.bio": bio,
+//         "profile.skills": skills,
+//         "profile.college": college,
+//         "profile.socialLinks": socialLinks,
+//       },
+//       { new: true }
+//     ).select("-password");
+
+//     res.status(200).json({ message: "Profile updated successfully.", updatedProfile });
+//   } catch (err) {
+//     res.status(500).json({ message: "Error updating profile.", error: err.message });
+//   }
+// });
+
+
+// router.post(
+//   "/upload-avatar",
+//   authenticateToken,
+//   upload.single("avatar"),
+//   async (req, res) => {
+//     const userId = req.user.id;
+
+//     if (!req.file) {
+//       return res.status(400).json({ message: "No image file provided." });
+//     }
+
+//     try {
+//       const avatarUrl = req.file.path;
+
+//       await HackMateUser.findByIdAndUpdate(userId, { "profile.avatar": avatarUrl });
+
+//       res.status(200).json({ message: "Avatar uploaded successfully.", avatarUrl });
+//     } catch (err) {
+//       res.status(500).json({ message: "Error uploading avatar.", error: err.message });
+//     }
+//   }
+// );
+
+
+// router.get("/", async (req, res) => {
+//   try {
+//     const users = await HackMateUser.find().select("-password");
+//     res.status(200).json({ users });
+//   } catch (err) {
+//     res.status(500).json({ message: "Error fetching users.", error: err.message });
+//   }
+// });
+
 
 module.exports = router;

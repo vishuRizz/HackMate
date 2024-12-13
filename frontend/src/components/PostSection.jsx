@@ -13,6 +13,7 @@ const PostSection = () => {
         const res = await axios.get(
           "https://hackmatebackend.vercel.app/api/v1/post"
         );
+        console.log(res.data.posts)
         setPosts(res.data.posts);
         setLoading(false);
       } catch (error) {
