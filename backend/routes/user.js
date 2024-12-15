@@ -1,25 +1,28 @@
 const express = require("express");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const { User: HackMateUser } = require("../models/db");
 const { upload } = require("../couldinary");
 const { authenticateToken } = require("../middlewares/middleware");
-const { initializeApp, cert } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");
 const axios = require("axios");
 const { authenticateFirebaseToken } = require("../middlewares/authenticateFirebaseToken");
-
 const router = express.Router();
 
-const firebaseAdminConfig = {
-  type: "service_account",
-  project_id: process.env.FIREBASE_PROJECT_ID,
-  private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-  client_email: process.env.FIREBASE_CLIENT_EMAIL,
-};
-initializeApp({ credential: cert(firebaseAdminConfig) });
+// this is the firebase config
 
+const { initializeApp, cert } = require("firebase-admin/app");
+require("dotenv").config();
+
+
+ const firebaseAdminConfig = {
+    type: "service_account",
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+  };
+  initializeApp({ credential: cert(firebaseAdminConfig) });
+
+// here ends the firebase config
 
 router.post("/auth", async (req, res) => {
   const { token } = req.body;

@@ -1,19 +1,19 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import LoaderTwo from "./Loader";
+import { AiOutlineLike, AiFillLike, AiOutlineComment } from "react-icons/ai"
 
 const PostSection = () => {
   const [posts, setPosts] = useState([]);
   const [visibleComments, setVisibleComments] = useState({});
   const [loading, setLoading] = useState(true);
-
+// console.log(posts)
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const res = await axios.get(
-          "https://hackmatebackend.vercel.app/api/v1/post"
+          "http://localhost:3000/api/v1/post"
         );
-        console.log(res.data.posts)
         setPosts(res.data.posts);
         setLoading(false);
       } catch (error) {
@@ -24,19 +24,41 @@ const PostSection = () => {
   }, []);
 
   const handleLike = async (postId) => {
+    const token = localStorage.getItem("firebaseToken");
+    if (!token) {
+      console.error("No Firebase token found in localStorage.");
+      return;
+    }
     try {
-      // Simulate API request to like a post
-      const updatedPosts = posts.map((post) =>
-        post._id === postId
-          ? { ...post, likesCount: (post.likesCount || 0) + 1 }
-          : post
+      const res = await axios.post(
+        `http://localhost:3000/api/v1/post/like/${postId}`,
+        {}, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      setPosts(updatedPosts);
+      const updatedPost = res.data.post;
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === updatedPost._id
+            ? { ...post, likesCount: updatedPost.likes.length }
+            : post
+        )
+      );
     } catch (error) {
-      console.error("Error liking post:", error);
+      console.error(
+        "Error liking post:",
+        error.response ? error.response.data : error.message
+      );
     }
   };
-
+  
+  
+  
+  
   const toggleCommentsVisibility = (postId) => {
     setVisibleComments((prevState) => ({
       ...prevState,
@@ -48,7 +70,7 @@ const PostSection = () => {
     <>
       {loading ? (
         <div className="flex items-center justify-center h-full">
-          <LoaderTwo />
+          <p>Loading...</p>
         </div>
       ) : (
         <div className="max-w-[700px] mx-auto px-4 py-6 space-y-3">
@@ -112,18 +134,26 @@ const PostSection = () => {
                     ))}
                   </div>
                 )}
-                <div className="flex items-center justify-between text-white">
+
+                {/* Like and Comment Buttons */}
+                <div className="flex items-center justify-between mt-4 text-white">
                   <button
-                    className="flex items-center text-sm hover:text-blue-500"
+                    className="flex items-center gap-1 text-sm hover:text-blue-500 transition-colors"
                     onClick={() => handleLike(post._id)}
                   >
-                    ❤️ {post.likesCount || 0} Likes
+                    {post.likes.includes(localStorage.getItem("firebaseUid")) ? (
+                      <AiFillLike className="text-blue-500" />
+                    ) : (
+                      <AiOutlineLike />
+                    )}
+                    {post.likesCount || 0} Likes
                   </button>
                   <button
-                    className="text-sm hover:text-blue-500"
+                    className="flex items-center gap-1 text-sm hover:text-blue-500 transition-colors"
                     onClick={() => toggleCommentsVisibility(post._id)}
                   >
-                    💬 {post.comments?.length || 0} Comments
+                    <AiOutlineComment />
+                    {post.comments?.length || 0} Comments
                   </button>
                 </div>
               </div>
@@ -153,10 +183,7 @@ const PostSection = () => {
                             <p className="text-xs text-gray-500">
                               {new Date(comment.createdAt).toLocaleTimeString(
                                 [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                }
+                                { hour: "2-digit", minute: "2-digit" }
                               )}{" "}
                               •{" "}
                               {new Date(comment.createdAt).toLocaleDateString()}
@@ -171,40 +198,6 @@ const PostSection = () => {
                   ) : (
                     <p className="text-sm text-gray-500">No comments yet.</p>
                   )}
-
-                  {/* Add Comment Section */}
-                  <div className="mt-4">
-                    <div className="flex items-start space-x-3">
-                      <img
-                        src="https://via.placeholder.com/40" // Replace with current user avatar
-                        alt="User Avatar"
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div className="flex-grow">
-                        <textarea
-                          id={`comment-input-${post._id}`}
-                          placeholder="Write a comment..."
-                          rows="2"
-                          className="w-full px-4 py-2 text-sm text-white bg-[#22272e] border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                        ></textarea>
-                        <div className="flex justify-end mt-2">
-                          <button
-                            className="px-4 py-2 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-500"
-                            onClick={() =>
-                              handleAddComment(
-                                post._id,
-                                document.getElementById(
-                                  `comment-input-${post._id}`
-                                ).value
-                              )
-                            }
-                          >
-                            Post Comment
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               )}
             </div>

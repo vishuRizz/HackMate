@@ -77,7 +77,7 @@ const navigate = useNavigate();
             >
               Organise a Hackathon
             </div>
-            <button
+            {/* <button
               onClick={() => openPopup(<Register />)}
               className="px-4 py-2 text-blue-600 transition duration-300 rounded-lg shadow-sm hover:text-white hover:bg-blue-600"
               style={{
@@ -86,7 +86,7 @@ const navigate = useNavigate();
               }}
             >
               Register
-            </button>
+            </button> */}
             <button
               onClick={() => openPopup(<Login />)}
               className="px-4 py-2 text-blue-600 transition duration-300 rounded-lg shadow-sm hover:text-white hover:bg-blue-600"

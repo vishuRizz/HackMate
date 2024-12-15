@@ -4,8 +4,9 @@ const { upload } = require("../couldinary");
 const { User } = require("../models/db");
 const { Post } = require("../models/db");
 const { authenticateToken } = require("../middlewares/middleware");
+const {authenticateFirebaseToken} = require("../middlewares/authenticateFirebaseToken")
 
-router.post("/", authenticateToken, upload.single("image"), async (req, res) => {
+router.post("/", authenticateFirebaseToken, upload.single("image"), async (req, res) => {
   const { content, tags, lookingFor } = req.body;
   const firebaseUid = req.user.id; 
 
@@ -189,16 +190,23 @@ router.post(
   }
 );
 
-router.post("/:id/comment", authenticateToken, async (req, res) => {
+router.post("/comment/:id", authenticateFirebaseToken, async (req, res) => {
   const { id } = req.params;
   const { text } = req.body;
-  const authorId = req.user.id;
+  const firebaseUid = req.user.id;
 
   if (!text) {
     return res.status(400).json({ message: "Comment text is required." });
   }
 
   try {
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: "User not found."
+       });
+    }
+
+    const authorId = user._id.toString();
     const post = await Post.findById(id);
 
     if (!post) {
@@ -215,30 +223,35 @@ router.post("/:id/comment", authenticateToken, async (req, res) => {
   }
 });
 
-router.post("/:id/like", authenticateToken, async (req, res) => {
+router.post("/like/:id", authenticateFirebaseToken, async (req, res) => {
   const { id } = req.params;
-  const userId = req.user.id;
+  const firebaseUid = req.user.id;
 
   try {
-    const post = await Post.findById(id);
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
 
+    const post = await Post.findById(id);
     if (!post) {
       return res.status(404).json({ message: "Post not found." });
     }
 
-    const index = post.likes.indexOf(userId);
+    const index = post.likes.indexOf(user._id.toString());
     if (index === -1) {
-      post.likes.push(userId); 
+      post.likes.push(user._id); 
     } else {
-      post.likes.splice(index, 1);
+      post.likes.splice(index, 1); 
     }
 
     await post.save();
 
-    res.status(200).json({ message: "Like updated successfully." });
+    res.status(200).json({ post });
   } catch (err) {
     res.status(500).json({ message: "Error updating likes.", error: err.message });
   }
 });
+
 
 module.exports = router;

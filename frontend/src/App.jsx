@@ -22,8 +22,8 @@ function App() {
   return (
     <>
       <Routes>
+      <Route path="/" element={<Home />} />
         <Route path="/main" element={<MainPage />} />
-        <Route path="/" element={<Home />} />
         <Route path="main/user/profile" element={<ProfilePage/>} />
         <Route path="main/user/profile/:id" element={<ProfileUser/>} />
       </Routes>
