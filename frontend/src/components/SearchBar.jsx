@@ -1,86 +1,83 @@
-import React from 'react';
-import styled from 'styled-components';
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 
-const SearchBar = ({ width = "300px", height = "35px" }) => {
+const SearchBar = ({ width = "w-64", height = "h-[30px]" }) => {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const dropdownRef = useRef(null);
+
+  const handleSearch = async (event) => {
+    const value = event.target.value;
+    setQuery(value);
+
+    if (!value) {
+      setResults([]);
+      return;
+    }
+
+    try {
+      const response = await axios.get("http://localhost:3000/api/v1/user/search", { params: { query: value } });
+      setResults(response.data.users);
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setResults([]);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <StyledWrapper width={width} height={height}>
-      <label className="search-label">
-        <input type="text" name="text" className="input" required placeholder="Type here..." />
-        <kbd className="slash-icon">/</kbd>
+    <div className={`relative ${width}`}>
+      {/* Search Input */}
+      <label
+        className={`flex items-center bg-gray-800 border border-gray-300 rounded-lg px-3 ${height} shadow-sm focus-within:ring focus-within:ring-gray-600`}
+      >
+        <input
+          type="text"
+          placeholder="Search for users..."
+          value={query}
+          onChange={handleSearch}
+          className="flex-grow bg-transparent text-gray-200 placeholder-gray-500 outline-none text-sm"
+        />
+        <kbd className="text-gray-400 bg-gray-700 px-2 py-1 rounded-md text-xs">/</kbd>
       </label>
-    </StyledWrapper>
+
+      {/* Dropdown Results */}
+      {results.length > 0 && (
+        <div
+          ref={dropdownRef}
+          className="absolute mt-2 w-full bg-gray-800 border border-gray-700 rounded-lg shadow-lg max-h-160 overflow-y-auto z-50"
+        >
+          {results.map((user) => (
+            <div
+              key={user._id}
+              className="flex items-center gap-3 p-3 border-b border-gray-700 last:border-none hover:bg-gray-700 cursor-pointer"
+            >
+              <img
+                src={user.profile?.avatar || "https://img.freepik.com/premium-vector/education-design_24877-28980.jpg"}
+                alt={user.name}
+                className="w-10 h-10 rounded-full bg-gray-600"
+              />
+              <div className="text-gray-200">
+                <div className="text-sm font-medium">{user.name}</div>
+                <div className="text-xs text-gray-400">{user.profile?.college || "No College Info"}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
-
-const StyledWrapper = styled.div`
-  .search-label {
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-    position: relative;
-    border: 1px solid transparent;
-    border-radius: 12px;
-    overflow: hidden;
-    background: #3d3d3d;
-    padding: 0 calc(${(props) => props.height} / 4);
-    cursor: text;
-    width: ${(props) => props.width};
-    height: ${(props) => props.height};
-  }
-
-  .search-label:hover {
-    border-color: gray;
-  }
-
-  .search-label:focus-within {
-    background: #464646;
-    border-color: gray;
-  }
-
-  .search-label input {
-    outline: none;
-    width: 100%;
-    border: none;
-    background: none;
-    color: rgb(162, 162, 162);
-    font-size: calc(${(props) => props.height} / 2.8);
-  }
-
-  .search-label svg {
-    position: absolute;
-    right: calc(${(props) => props.height} / 4);
-    width: calc(${(props) => props.height} * 0.7);
-    height: calc(${(props) => props.height} * 0.7);
-    color: #7e7e7e;
-  }
-
-  .search-label input:focus + .slash-icon,
-  .search-label input:valid + .slash-icon {
-    display: none;
-  }
-
-  .slash-icon {
-    position: absolute;
-    right: calc(${(props) => props.height} / 4);
-    border: 1px solid #393838;
-    background: linear-gradient(-225deg, #343434, #6d6d6d);
-    border-radius: 3px;
-    text-align: center;
-    box-shadow: inset 0 -2px 0 0 #3f3f3f, inset 0 0 1px 1px rgb(94, 93, 93), 0 1px 2px 1px rgba(28, 28, 29, 0.4);
-    cursor: pointer;
-    font-size: calc(${(props) => props.height} / 3.5);
-    width: calc(${(props) => props.height} / 1.5);
-    height: calc(${(props) => props.height} / 1.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .slash-icon:active {
-    box-shadow: inset 0 1px 0 0 #3f3f3f, inset 0 0 1px 1px rgb(94, 93, 93), 0 1px 2px 0 rgba(28, 28, 29, 0.4);
-    text-shadow: 0 1px 0 #7e7e7e;
-    color: transparent;
-  }
-`;
 
 export default SearchBar;

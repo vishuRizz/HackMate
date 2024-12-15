@@ -239,62 +239,27 @@ router.post(
     }
   }
 );
+router.get("/search", async (req, res) => {
+  const { query } = req.query;
 
-// router.put("/profile", authenticateToken, async (req, res) => {
-//   const userId = req.user.id;
-//   const { bio, skills, college, socialLinks } = req.body;
+  if (!query) {
+    return res.status(400).json({ message: "Search query is required." });
+  }
 
-//   try {
-//     const updatedProfile = await HackMateUser.findByIdAndUpdate(
-//       userId,
-//       {
-//         "profile.bio": bio,
-//         "profile.skills": skills,
-//         "profile.college": college,
-//         "profile.socialLinks": socialLinks,
-//       },
-//       { new: true }
-//     ).select("-password");
+  try {
+    const users = await HackMateUser.find({
+      $or: [
+        { name: { $regex: query, $options: "i" } }, // Case-insensitive search in name
+        { "profile.skills": { $regex: query, $options: "i" } }, // Case-insensitive search in skills
+      ],
+    }).select("name email profile.avatar profile.skills profile.college");
 
-//     res.status(200).json({ message: "Profile updated successfully.", updatedProfile });
-//   } catch (err) {
-//     res.status(500).json({ message: "Error updating profile.", error: err.message });
-//   }
-// });
-
-
-// router.post(
-//   "/upload-avatar",
-//   authenticateToken,
-//   upload.single("avatar"),
-//   async (req, res) => {
-//     const userId = req.user.id;
-
-//     if (!req.file) {
-//       return res.status(400).json({ message: "No image file provided." });
-//     }
-
-//     try {
-//       const avatarUrl = req.file.path;
-
-//       await HackMateUser.findByIdAndUpdate(userId, { "profile.avatar": avatarUrl });
-
-//       res.status(200).json({ message: "Avatar uploaded successfully.", avatarUrl });
-//     } catch (err) {
-//       res.status(500).json({ message: "Error uploading avatar.", error: err.message });
-//     }
-//   }
-// );
-
-
-// router.get("/", async (req, res) => {
-//   try {
-//     const users = await HackMateUser.find().select("-password");
-//     res.status(200).json({ users });
-//   } catch (err) {
-//     res.status(500).json({ message: "Error fetching users.", error: err.message });
-//   }
-// });
+    res.status(200).json({ users });
+  } catch (err) {
+    console.error("Error performing search:", err.message);
+    res.status(500).json({ message: "Error performing search.", error: err.message });
+  }
+});
 
 
 module.exports = router;

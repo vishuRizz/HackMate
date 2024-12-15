@@ -60,7 +60,7 @@ const PostSection = () => {
     <div className="flex items-center px-4 py-3">
       <img
         src={
-          post.authorId?.profile.avatar || "https://via.placeholder.com/40"
+          post.authorId?.profile.avatar || "https://img.freepik.com/premium-vector/education-design_24877-28980.jpg"
         }
         alt="Author Avatar"
         className="w-12 h-12 rounded-full"
