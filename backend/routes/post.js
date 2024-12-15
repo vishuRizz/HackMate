@@ -66,10 +66,10 @@ router.get("/", async (req, res) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
-      .populate("authorId", "name email profile.avatar profile.college")
+      .populate("authorId", "name email profile.avatar profile.bio profile.college")
       .populate({
         path: "comments.authorId",
-        select: "name email profile.avatar",
+        select: "name email profile.avatar ",
       });
 
     const formattedPosts = posts.map((post) => ({
@@ -99,10 +99,10 @@ router.get("/:id", async (req, res) => {
 
   try {
     const post = await Post.findById(id)
-      .populate("authorId", "name email profile.avatar")
+      .populate("authorId", "name email profile.avatar profile.bio profile.college")
       .populate({
         path: "comments.authorId",
-        select: "name email profile.avatar",
+        select: "name email profile.avatar ",
       });
 
     if (!post) {

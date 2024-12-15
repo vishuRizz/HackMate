@@ -43,7 +43,7 @@ const setupTokenRefresh = () => {
       try {
         // Initial token refresh
         const token = await user.getIdToken(true);
-        console.log("Initial Firebase Token:", token);
+        // console.log("Initial Firebase Token:", token);
 
         // Store token securely in localStorage
         localStorage.setItem("firebaseToken", token);
@@ -60,7 +60,7 @@ const setupTokenRefresh = () => {
             console.error("Error during periodic token refresh:", error.message);
             clearInterval(refreshInterval); // Stop the interval on error
           }
-        }, 58 * 60 * 1000); // 58 minutes
+        }, 50 * 60 * 1000); // 50 minutes
       } catch (error) {
         console.error("Error refreshing token on auth state change:", error.message);
       }
