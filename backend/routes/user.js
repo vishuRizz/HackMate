@@ -249,8 +249,8 @@ router.get("/search", async (req, res) => {
   try {
     const users = await HackMateUser.find({
       $or: [
-        { name: { $regex: query, $options: "i" } }, // Case-insensitive search in name
-        { "profile.skills": { $regex: query, $options: "i" } }, // Case-insensitive search in skills
+        { name: { $regex: query, $options: "i" } },
+        { "profile.skills": { $regex: query, $options: "i" } },
       ],
     }).select("name email profile.avatar profile.skills profile.college");
 

@@ -1,51 +1,93 @@
 const express = require("express");
-const { authenticateToken } = require("../middlewares/middleware");
-const { authenticateAdmin } = require("../middlewares/authenticateAdmin");
-const { Hackathon } = require("../models/db");
 const router = express.Router();
+const { Hackathon, User } = require("../models/db");
+const { authenticateFirebaseToken } = require("../middlewares/authenticateFirebaseToken");
+const { isOrganizerMiddleware } = require("../middlewares/isOrganiserMiddleware")
 
-router.get("/", async (req, res) => {
+// ---------------- Hackathon Routes ----------------
+
+// Create a new Hackathon
+router.post("/", authenticateFirebaseToken, async (req, res) => {
   try {
-    const hackathons = await Hackathon.find().sort({ date: 1 });
-    res.status(200).json({ hackathons });
+    const firebaseUid = req.user.id; 
+
+    const organizer = await User.findOne({ firebaseUid });
+    if (!organizer) {
+      return res.status(404).json({ error: "Organizer not found. Please register first." });
+    }
+
+    const hackathon = await Hackathon.create({
+      ...req.body,
+      organizer: organizer._id,
+    });
+
+    await User.findByIdAndUpdate(organizer._id, {
+      $push: { hostedHackathons: hackathon._id },
+    });
+
+    res.status(201).json(hackathon);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error fetching hackathons.", error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
-router.post("/", authenticateToken, authenticateAdmin, async (req, res) => {
-  const { id, title, description, date, duration, location, organizer, link } =
-    req.body;
 
+// Get all Hackathons
+router.get("/", async (req, res) => {
   try {
-    let hackathon;
-    if (id) {
-      hackathon = await Hackathon.findByIdAndUpdate(
-        id,
-        { title, description, date, duration, location, organizer, link },
-        { new: true }
-      );
-    } else {
-      hackathon = new Hackathon({
-        title,
-        description,
-        date,
-        duration,
-        location,
-        organizer,
-        link,
-      });
-      await hackathon.save();
-    }
-    res
-      .status(200)
-      .json({ message: "Hackathon updated successfully.", hackathon });
+    const { isPublic } = req.query;
+    const filter = isPublic ? { isPublic: isPublic === "true" } : {};
+    const hackathons = await Hackathon.find(filter);
+    res.json(hackathons);
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error updating hackathon.", error: err.message });
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Get Hackathon by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const hackathon = await Hackathon.findById(req.params.id).populate("teams");
+    if (!hackathon) return res.status(404).json({ error: "Hackathon not found" });
+    res.json(hackathon);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Update Hackathon Details
+router.put("/:id", authenticateFirebaseToken, isOrganizerMiddleware, async (req, res) => {
+  try {
+    const hackathon = await Hackathon.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    if (!hackathon) return res.status(404).json({ error: "Hackathon not found" });
+    res.json(hackathon);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Delete a Hackathon
+router.delete("/:id", authenticateFirebaseToken, isOrganizerMiddleware, async (req, res) => {
+  try {
+    const hackathon = await Hackathon.findByIdAndDelete(req.params.id);
+    if (!hackathon) return res.status(404).json({ error: "Hackathon not found" });
+    res.json({ message: "Hackathon deleted successfully" });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Get Hackathon Stats
+router.get("/:id/stats", isOrganizerMiddleware, async (req, res) => {
+  try {
+    const hackathon = await Hackathon.findById(req.params.id);
+    if (!hackathon) return res.status(404).json({ error: "Hackathon not found" });
+    const stats = hackathon.stats;
+    res.json(stats);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 

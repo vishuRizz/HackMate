@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 const Navbar = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false); // For toggling the search bar
+  const [isSearchOpen, setIsSearchOpen] = useState(false); 
 
   return (
     <nav className="fixed top-0 left-0 z-50 flex items-center h-[55px] justify-between w-full px-6 py-3 bg-[#292929] text-white backdrop-blur-md shadow-md">

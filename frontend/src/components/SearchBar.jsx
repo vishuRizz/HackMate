@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const SearchBar = ({ width = "w-64", height = "h-[30px]" }) => {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   const handleSearch = async (event) => {
     const value = event.target.value;
@@ -18,6 +20,7 @@ const SearchBar = ({ width = "w-64", height = "h-[30px]" }) => {
     try {
       const response = await axios.get("http://localhost:3000/api/v1/user/search", { params: { query: value } });
       setResults(response.data.users);
+      console.log(response.data.users)
     } catch (error) {
       console.error("Error fetching search results:", error);
     }
@@ -60,6 +63,9 @@ const SearchBar = ({ width = "w-64", height = "h-[30px]" }) => {
         >
           {results.map((user) => (
             <div
+            onClick={()=>{
+              navigate(`/main/user/profile/${user._id}`)
+            }}
               key={user._id}
               className="flex items-center gap-3 p-3 border-b border-gray-700 last:border-none hover:bg-gray-700 cursor-pointer"
             >

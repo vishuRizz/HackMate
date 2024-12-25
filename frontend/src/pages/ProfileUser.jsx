@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import UpdateProfilePopup from "../components/UpdateProfilePopup";
+import axios from "axios"
 import Navbar from "../components/Navbar";
+import { useParams } from "react-router-dom";
 
 const ProfileUser = () => {
+  const idObject = useParams()
+  const id = idObject.id
+  console.log(id)
+
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showProfileUpdate, setShowProfileUpdate] = useState(false);
-  const [showAvatarUpdate, setShowAvatarUpdate] = useState(false);
 
 
   useEffect(() => {
@@ -20,10 +22,10 @@ const ProfileUser = () => {
           return;
         }
 
-        const res = await axios.post(`http://localhost:3000/api/v1/user/profile/${id}`, {
+        const res = await axios.get(`http://localhost:3000/api/v1/user/profile/${id}`, {
           id: hackmateMongoId,
         });
-        // console.log("Data for profile:", res.data);
+        console.log("Data for profile:", res.data);
         setProfile(res.data.user);
         setLoading(false);
       } catch (error) {
@@ -38,33 +40,6 @@ const ProfileUser = () => {
     getFullProfile();
   }, []);
 
-  const handleAvatarUpdate = async (newAvatar) => {
-    try {
-      const formData = new FormData();
-      formData.append("avatar", newAvatar);
-
-      const res = await axios.post(
-        `http://localhost:3000/api/v1/user/upload-avatar`,
-        formData,
-        {
-          headers: {
-            Authorization: `${localStorage.getItem("token")}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      alert("Avatar updated successfully.");
-      setProfile((prev) => ({
-        ...prev,
-        profile: { ...prev.profile, avatar: res.data.avatarUrl },
-      }));
-      setShowAvatarUpdate(false);
-    } catch (error) {
-      console.error("Error updating avatar:", error.response?.data || error.message);
-      alert("Failed to update avatar.");
-    }
-  };
 
   if (loading) {
     return <div className="text-center mt-20 text-lg">Loading your profile data...</div>;

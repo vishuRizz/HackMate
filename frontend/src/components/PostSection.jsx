@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { AiOutlineComment } from "react-icons/ai";
 import CommentSection from "./CommentSection";
 import LikeSection from "./LikeSection";
+import LoaderTwo from "./Loader";
 
 const PostSection = () => {
   const [posts, setPosts] = useState([]);
@@ -47,7 +48,7 @@ const PostSection = () => {
     <>
       {loading ? (
         <div className="flex items-center justify-center h-full">
-          <div>Loading...</div>
+          <div><LoaderTwo/></div>
         </div>
       ) : (
         <div className="max-w-[700px] mx-auto px-4 py-6 space-y-3">
